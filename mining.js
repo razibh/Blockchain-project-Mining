@@ -1,9 +1,9 @@
 const sha256 = require("crypto-js/sha256")
 class Block{
-    constructor(timestamp,data, previoushash = ""){
+    constructor(timestamp,transactions, previoushash = ""){
         this.timestamp = timestamp;
 
-        this.data = data;
+        this.transactions = this.transactions;
         this.previoushash = previoushash;
         this.hash = this.calculateHash();
         this.nonce =0;
@@ -17,28 +17,46 @@ class Block{
         console.log("Mining DOne : "+ this.hash);
     }
     calculateHash(){
-        return sha256( this.timestamp + JSON.stringify(this.data) + this
+        return sha256( this.timestamp + JSON.stringify(this.transactions) + this
         .previoushash + this.nonce).toString();
+    }
+}
+class Transaction{
+    constructor (fromAddress,toAddaress,amount)
+    {
+        this.fromAddress = fromAddress;
+        this.toAddaress= toAddaress;
+        this.amount = amount;
     }
 }
 
 class Blockchain {
     constructor (){
-        this.chain = [this.generateGenesisBlocl()];
+        this.chain = [this.generateGenesisBlock()];
         this.difficulty =5;
+        this.pendingTransactins= [];
 }
-generateGenesisBlocl(){
+
+generateGenesisBlock(){
     return new Block("2022-12-05", "GENESIS", "0000 ");
 }
     getLatestBlock(){
         return this.chain[this.chain.length -1];
     }
-    addBlock(newBlock){
-        newBlock.previoushash = this.getLatestBlock().hash;
-        newBlock.mineBlock(this.difficulty);
-        this.chain.push(newBlock);
-    
-}
+
+    createTransaction(transaction)
+    {
+        this.pendingTransactins.push(transaction)
+    }
+
+    minePendingTransactions()
+    {
+        let block = new Block(Date.now(),this.pendingTransactins);
+        block.mineBlock(this.difficulty);
+        this.chain.push(block);
+        this.pendingTransactins = [];
+    }
+
     isBlockchainValid(){
         for (let i=1; i<this.chain.length; i++)
         {
@@ -58,10 +76,9 @@ generateGenesisBlocl(){
     }
 
 const josscoin = new Blockchain();
-const block1 =new Block("2022-12-04", { amount: 5 } );
-josscoin.addBlock(block1);
-const block2 =new Block("2022-12-05", { amount: 10 } );
-josscoin.addBlock(block2);
+josscoin.createTransaction(new Transaction('Address1','Address2',1000));
+josscoin.createTransaction(new Transaction('Address2','Address1',5000));
+josscoin.minePendingTransactions();
 console.log(josscoin);
 
 
