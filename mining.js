@@ -25,7 +25,7 @@ class Block{
 class Blockchain {
     constructor (){
         this.chain = [this.generateGenesisBlocl()];
-        this.difficulty =2;
+        this.difficulty =5;
 }
 generateGenesisBlocl(){
     return new Block("2022-12-05", "GENESIS", "0000 ");
@@ -58,11 +58,11 @@ generateGenesisBlocl(){
     }
 
 const josscoin = new Blockchain();
-const block =new Block("2022-12-04", { amount: 5 }, "ABCD");
-josscoin.addBlock(block);
-console.log(josscoin.isBlockchainValid());
- josscoin.chain[1].data = "Haked";
- console.log(josscoin.isBlockchainValid());
- 
+const block1 =new Block("2022-12-04", { amount: 5 } );
+josscoin.addBlock(block1);
+const block2 =new Block("2022-12-05", { amount: 10 } );
+josscoin.addBlock(block2);
+console.log(josscoin);
+
 
  
