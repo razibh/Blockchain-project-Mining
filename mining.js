@@ -41,11 +41,11 @@ class Transaction {
     }
     calculateHash()
     {
-        return sha256(this.fromAddress + this.toddress + this.amount);
+        return sha256(this.fromAddress + this.toddress + this.amount).toString();
     }
     signTransaction(key)
     {
-         if (key.grtPublic("hex") !== this.fromAddress)
+         if (key.getPublic("hex") !== this.fromAddress)
          {
             throw new Error("You do not have access");
          }
@@ -60,7 +60,7 @@ class Transaction {
         {
             throw new Error("NO signture found");
         }
-        const key= ec.keyFromPublic(this.fromAddress,"hex");
+        const key = ec.keyFromPublic(this.fromAddress,"hex");
        return key.verify(this.calculateHash(), this.singnature);
     }
 }
@@ -82,13 +82,21 @@ class Blockchain {
     addTransaction(transaction) {
         if (!transaction.fromAddress || !transaction.toAddaress)
         {
-            throw new Error ("Cannot process transactions");
+            throw new Error ("Cannot process transaction");
         }
         if (!transaction.isValid())
         {
-            throw new Error("Invalied transactions");
+            throw new Error("Invalied transaction");
         }
-        
+        if (transaction.amount <0)
+        {
+            throw new Error("Invalied transactio amount");
+        }
+        if (transaction.amount > this.getBalanceOfAddress(transaction.fromAddress))
+        {
+            throw new Error("Not Enough amount");
+        }
+
         this.pendingTransactins.push(transaction)
     }
 
@@ -133,12 +141,8 @@ class Blockchain {
     }
 }
 
-const josscoin = new Blockchain();
-josscoin.addTransaction(new Transaction("Address1", "Address2", 1000));
-josscoin.addTransaction(new Transaction("Address2", "Address1", 5000));
-josscoin.minePendingTransactions();
-console.log(josscoin.getBalanceOfAddress("Address1"));
-console.log(josscoin.getBalanceOfAddress("Address2"));
-console.log(josscoin);
-
+module.exports = {
+    Block,
+    Transaction,Blockchain
+};
 
