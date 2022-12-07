@@ -1,5 +1,8 @@
 const sha256 = require("crypto-js/sha256");
 const { base } = require("elliptic/lib/elliptic/curve");
+var EC = require('elliptic').ec;
+
+var ec = new EC('secp256k1');
 
 class Block {
     constructor(timestamp, transactions, previoushash = "") {
@@ -20,12 +23,9 @@ class Block {
         return sha256(this.timestamp + JSON.stringify(this.transactions) + this
             .previoushash + this.nonce).toString();
     }
-    hasValidTransactions()
-    {
-        for (const tx of this.transactions)
-        {
-            if (!tx.isValid())
-            {
+    hasValidTransactions() {
+        for (const tx of this.transactions) {
+            if (!tx.isValid()) {
                 return false;
             }
         }
@@ -39,29 +39,24 @@ class Transaction {
         this.toAddaress = toAddaress;
         this.amount = amount;
     }
-    calculateHash()
-    {
+    calculateHash() {
         return sha256(this.fromAddress + this.toddress + this.amount).toString();
     }
-    signTransaction(key)
-    {
-         if (key.getPublic("hex") !== this.fromAddress)
-         {
+    signTransaction(key) {
+        if (key.getPublic("hex") !== this.fromAddress) {
             throw new Error("You do not have access");
-         }
-         const hashTx = this.calculateHash();
-         const singnature = key.sign(hashTx,"base64");
-         this.singnature = singnature.toDER();
+        }
+        const hashTx = this.calculateHash();
+        const singnature = key.sign(hashTx, "base64");
+        this.singnature = singnature.toDER();
     }
-    isValid()
-    {
-        if (this.fromAddress === null)true;
-        if(!this.singnature || this.singnature.length ===0)
-        {
+    isValid() {
+        if (this.fromAddress === null) true;
+        if (!this.singnature || this.singnature.length === 0) {
             throw new Error("NO signture found");
         }
-        const key = ec.keyFromPublic(this.fromAddress,"hex");
-       return key.verify(this.calculateHash(), this.singnature);
+        const key = ec.keyFromPublic(this.fromAddress, "hex");
+        return key.verify(this.calculateHash(), this.singnature);
     }
 }
 
@@ -80,20 +75,16 @@ class Blockchain {
     }
 
     addTransaction(transaction) {
-        if (!transaction.fromAddress || !transaction.toAddaress)
-        {
-            throw new Error ("Cannot process transaction");
+        if (!transaction.fromAddress || !transaction.toAddaress) {
+            throw new Error("Cannot process transaction");
         }
-        if (!transaction.isValid())
-        {
+        if (!transaction.isValid()) {
             throw new Error("Invalied transaction");
         }
-        if (transaction.amount <0)
-        {
+        if (transaction.amount < 0) {
             throw new Error("Invalied transactio amount");
         }
-        if (transaction.amount > this.getBalanceOfAddress(transaction.fromAddress))
-        {
+        if (transaction.amount > this.getBalanceOfAddress(transaction.fromAddress)) {
             throw new Error("Not Enough amount");
         }
 
@@ -117,8 +108,7 @@ class Blockchain {
             if (CurrantBlock.previoushash !== previoushBlock.hash) {
                 return false;
             }
-            if (!CurrantBlock.hasValidTransactions())
-            {
+            if (!CurrantBlock.hasValidTransactions()) {
                 return false;
             }
         }
@@ -143,6 +133,6 @@ class Blockchain {
 
 module.exports = {
     Block,
-    Transaction,Blockchain
+    Transaction, Blockchain
 };
 
